@@ -13,8 +13,7 @@ contract BetMaker is Ownable {
     
     using SafeMath for uint256;
     
-    // This event is to be used should we allow bets to be created w/o a contra party, so we would only need to track the 
-    // event BetIssued(address issuer, uint betId, uint bag);
+    // This event is to be used as an alert to front-end new bet has been created and to make it viewable 
     event BetMade(address issuer, address taker, uint betId, uint bag, uint8 sport, uint8 winCondition);
     
     
@@ -45,10 +44,15 @@ contract BetMaker is Ownable {
         emit BetMade(_issuer, _taker, id, _bag, _sport, _winCondition);
     }
     
-    
+    // @dev Goal is to utilize an oracle to determine which side receives the bag at the end of the betting event. May need
+    //      may need to start with simple centralized oracle and API reporting before eventually building out to completely 
+    //      accept Chainlink or other truly decentralized Oracles.
+    function _whoWon(uint _betId) internal {
+        
+    }
     
     // This function will be used to query the Oracles and verify the outcome of the sport and winCondition to determine 
-    // who receives the bag
+    // who receives the bag 
     function _payout() internal {
         
     }
