@@ -1,58 +1,52 @@
-pragma solidity 0.5.17;
+pragma solidity >=0.5.0 <0.6.0;
 
-contract Counter {
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v2.4.0/contracts/math/SafeMath.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v2.4.0/contracts/ownership/Ownable.sol";
+import "./BetMaker.sol";
+import "./Housekeeping.sol";
 
-    uint256 private _count;
-    address private _owner;
-    address private _factory;
+/* @title This contract is the basic Bet creation tool
+* @author Dirgeguy
+* @notice This contract is intended to create bets accepts by users on the front-end and translate them into smart contracts. 
+* @dev Currently, the deployment blockchain has not been chosen, so the contract will contain basic 
+* infrastructure to support Loom, ETH, or other solidity accepting chains. This will also be as simplistic as possible to
+* allow for BetMaker to call and create contracts for each new bet users want to create. This will be for the semi-centralized iteration
+* of the decentralized P2P gambling app.
+*/
 
 
-     modifier onlyOwner(address caller) {
-        require(caller == _owner, "You're not the owner of the contract");
-        _;
+contract BetContract {
+    
+    using SafeMath for uint256;
+    
+    address payable _issuer;
+    address payable _taker;
+    address payable _banker;
+    
+    constructor(
+        address payable issuer,
+        address payable taker,
+        address payable banker
+        ) 
+        public {
+            _issuer = issuer;
+            _taker = taker;
+            _banker = banker;
     }
-
-    modifier onlyFactory() {
-        require(msg.sender == _factory, "You need to use the factory");
-        _;
+    
+    function _bet(uint _bag, uint16 _sport, uint16 _winCondition) external payable onlyOwner {
+        require(msg.value == _bag);
+        _betMade( _issuer, _taker, _bag, _sport, _winCondition);
     }
-
-     constructor(address owner) public {
-        _owner = owner;
-        _factory = msg.sender;
+    
+    function winnerWinner(bool _issuerWin) external onlyOwner {
+        if(_issuerWin == true) {
+            _issuer.transfer(address(this).balance.sub(address(this).balance.div(100)));
+            _banker.transfer(address(this).balance);
+        } else {
+            _taker.transfer(address(this).balance.sub(address(this).balance.div(100)));
+            _banker.transfer(address(this).balance);
+        }
     }
-
-     function getCount() public view returns (uint256) {
-        return _count;
-    }
-
-    function increment(address caller) public onlyFactory onlyOwner(caller) {
-        _count++;
-    }
-
-}
-
-contract CounterFactory {
-
-    mapping(address => Counter) _counters;
-
-    function createCounter() public {
-        require (_counters[msg.sender] == Counter(0));
-        _counters[msg.sender] = new Counter(msg.sender);
-    }
-
-    function increment() public {
-        require (_counters[msg.sender] != Counter(0));
-        Counter(_counters[msg.sender]).increment(msg.sender);
-    }
-
-    function getCount(address account) public view returns (uint256) {
-        require (_counters[account] != Counter(0));
-        return (_counters[account].getCount());
-    }
-
-    function getMyCount() public view returns (uint256) {
-        return (getCount(msg.sender));
-    }
-
+    
 }
