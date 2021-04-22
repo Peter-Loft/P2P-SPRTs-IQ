@@ -14,6 +14,7 @@ import "./Housekeeping.sol";
 * of the decentralized P2P gambling app.
 */
 
+// Factory and Proxy implementation.
 
 contract BetContract {
     
