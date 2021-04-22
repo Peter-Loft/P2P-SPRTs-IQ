@@ -47,14 +47,24 @@ contract BetMaker is Ownable {
     *      the fee levied by us) is distributed to the winner.
     */
     
-    
+    // Currently this aspect of the contract is nto working and there seems to be an issue with the mapping. 
+    function getBetsByMaker(address _owner) external view returns (uint[] memory) {
+        uint[] memory result = new uint[](makerBetCount[_owner]);
+        uint counter = 0;
+        for (uint i = 0; i < bets.length; i = i.add(1)) {
+          if (betToOwner[i] == _owner) {
+            result[counter] = i;
+            counter = counter.add(1);
+          }
+        }
+    }
     
     function _commitBet(address payable _issuer, address payable _taker, uint16 _sport, uint16 _winCondition) public onlyOwner returns (address) {
         Bet _b = new Bet(_issuer, _taker, banker, _sport, _winCondition);
         _bAddress = address(_b);
         uint id = bets.push(BetArray(_bAddress, _issuer, _taker, _sport, _winCondition)) - 1;
-        betToOwner[id] = msg.sender;
-        makerBetCount[msg.sender] = makerBetCount[msg.sender].add(1);
+        betToOwner[id] = _issuer;
+        makerBetCount[_issuer] = makerBetCount[_issuer].add(1);
         emit BetMade(_bAddress, _issuer, _taker, id, _sport, _winCondition);
         return _bAddress;
     }
