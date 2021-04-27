@@ -38,7 +38,7 @@ contract BetMaker is Ownable {
         uint16 sport;
         uint16 winCondition;
     } 
-    
+    address[] public liveBets;
     BetArray[] public bets;
     
     /* @dev This function's main intention is to accept parameters from a front-end interface and lock all conditions onto
@@ -59,12 +59,14 @@ contract BetMaker is Ownable {
         }
     }
     
+    
     function _commitBet(address payable _issuer, address payable _taker, uint16 _sport, uint16 _winCondition) public onlyOwner returns (address) {
         Bet _b = new Bet(_issuer, _taker, banker, _sport, _winCondition);
         _bAddress = address(_b);
         uint id = bets.push(BetArray(_bAddress, _issuer, _taker, _sport, _winCondition)) - 1;
         betToOwner[id] = _issuer;
         makerBetCount[_issuer] = makerBetCount[_issuer].add(1);
+        liveBets.push(_bAddress);
         emit BetMade(_bAddress, _issuer, _taker, id, _sport, _winCondition);
         return _bAddress;
     }
@@ -107,11 +109,13 @@ contract Bet {
     }
     
     function _bet(uint _bag) external payable {
+        require(_bag > 4999999999999);
         require(msg.value == _bag, "Not enough money, dumba$$");
     }
     
     
     // This is currently a simple implementation that should allow a trusted banking contract to disperse the funds.
+    // Ideally will eventual replace with a trusted Oracle integration.
     function _winnerWinner(bool _issuerWin) external {
         require(_banker == msg.sender, "You are not authorized for this function");
             if(_issuerWin == true) {
