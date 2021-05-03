@@ -29,10 +29,12 @@ contract FootballBets is Ownable {
         uint8 chosenWinner;
     }
 
-    enum BettableOutcome {
-        Visitor,
-        Host
-        }
+    enum GameOutcome {
+        Pending,    //game has not been fought to decision
+        Underway,   //game has started & is underway
+        Draw,       //anything other than a clear winner (e.g. cancelled)
+        Decided     //index of participant who is the winner 
+    }
 
     /// @notice determines whether or not the user has already bet on the given game 
     /// @param _user address of a user 
