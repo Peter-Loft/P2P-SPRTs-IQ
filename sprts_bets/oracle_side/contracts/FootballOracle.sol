@@ -99,7 +99,7 @@ contract FootballOracle is Ownable {
         require(!gameExists(id));
         
         //add the game 
-        uint newIndex = games.push(Game(id, _name, _visitor, _home, _line, 0, _date, GameOutcome.Pending))-1; 
+        uint newIndex = games.push(Game(id, _name, _visitor, _home, 0, _line, _date, GameOutcome.Pending))-1; 
         gameIdToIndex[id] = newIndex+1;
         
         //return the unique id of the new game
