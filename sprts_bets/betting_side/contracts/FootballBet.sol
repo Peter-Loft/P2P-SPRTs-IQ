@@ -14,13 +14,14 @@ contract FootballBets is Ownable {
     //mappings 
     mapping(address => bytes32[]) private userToBets;
     mapping(bytes32 => Bet[]) private gameToBets;
+    mapping(bytes32 => bool) internal matchPaidOut;
 
     //football results oracle 
     address internal footballOracleAddr;
     OracleInterface internal footballOracle = OracleInterface(footballOracleAddr);
 
     //constants
-    uint internal minimumBet = 100000000000000;
+    uint internal minimumBet = 10000000000000000;
 
     struct Bet {
         address user;
@@ -41,8 +42,25 @@ contract FootballBets is Ownable {
     /// @param _gameId id of a game 
     /// @param _chosenWinner the index of the participant to bet on (to win) 
     /// @return true if the given user has already placed a bet on the given game 
+    /// TODO: Implement system to allow increasing bets by previous bettors
     function _betIsValid(address _user, bytes32 _gameId, uint8 _chosenWinner) private view returns (bool) {
-        
+        bytes32[] storage userBets = userToBets[_user];
+        if (userBets.length > 0) {
+            for (uint n = 0; n < userBets.length; n++) {
+                if (userBets[n] == _gameId) {
+                    // user has already made a bet for this game
+                    return false;
+                }
+            }
+        }
+        uint8 visitor;
+        uint8 home;
+        (,,visitor,home,,,,) = footballOracle.getGame(_gameId);
+        if(_chosenWinner != visitor && _chosenWinner != home) {
+            // user is trying to bet on a team not participating in this game
+            return false;
+        }
+
         return true;
     }
 
@@ -50,8 +68,9 @@ contract FootballBets is Ownable {
     /// @param _gameId id of a game 
     /// @return true if the game is bettable 
     function _gameOpenForBetting(bytes32 _gameId) private view returns (bool) {
-        
-        return true;
+        OracleInterface.GameOutcome outcome;
+        (,,,,,,,outcome) = getGame(_gameId);
+        return outcome == OracleInterface.GameOutcome.Pending;
     }
 
  
