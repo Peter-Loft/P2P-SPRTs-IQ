@@ -4,7 +4,7 @@ import "./FootballBet.sol";
 import "./SafeMath.sol";
 import "./OracleInterface.sol";
 
-
+/// @notice acts as the main interaction point between the oracle and users
 contract BetPayout is FootballBets {
 
     using SafeMath for uint; 
